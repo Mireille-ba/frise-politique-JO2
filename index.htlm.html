@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olympics and Politics Timeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f2ec;
+      --surface: #fffdf9;
+      --surface-2: #efe7dc;
+      --text: #211d18;
+      --muted: #6b645c;
+      --line: #cdbfae;
+      --shadow: 0 14px 34px rgba(56, 41, 28, 0.10);
+      --radius: 20px;
+      --propaganda: #8d3f1f;
+      --boycott: #8a6700;
+      --contestation: #0f5f67;
+      --diplomacy: #6b3370;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #f3ede4 0%, var(--bg) 100%);
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--propaganda);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 14px 0 12px;
+      font-size: clamp(2.2rem, 5vw, 4.8rem);
+      line-height: 0.98;
+      max-width: 10ch;
+    }
+    .intro {
+      max-width: 74ch;
+      color: var(--muted);
+      margin: 0 0 18px;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 28px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: rgba(255,253,249,.86);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: .92rem;
+      white-space: nowrap;
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .shell {
+      background: rgba(255,253,249,.72);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .shell-head {
+      padding: 20px 22px 0;
+      color: var(--muted);
+      font-size: .96rem;
+    }
+    .horizontal-wrap {
+      overflow-x: auto;
+      padding: 30px 20px 18px;
+      scrollbar-width: thin;
+      scrollbar-color: #bfae99 transparent;
+    }
+    .timeline {
+      position: relative;
+      min-width: 2400px;
+      height: 280px;
+      padding: 18px 50px 40px;
+    }
+    .axis {
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      top: 132px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #cdbfae, #b19576);
+    }
+    .tick {
+      position: absolute;
+      top: 120px;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      opacity: .95;
+    }
+    .tick-line {
+      width: 2px;
+      height: 24px;
+      background: #bca892;
+      margin: 0 auto 7px;
+    }
+    .tick-label {
+      font-size: .78rem;
+      color: var(--muted);
+      font-weight: 600;
+      background: rgba(255,253,249,.9);
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(205,191,174,.8);
+    }
+    .event {
+      position: absolute;
+      width: 200px;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+    .event.above { top: 0; }
+    .event.below { top: 146px; }
+    .connector {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      background: #c9b9a7;
+    }
+    .event.above .connector { top: 106px; height: 30px; }
+    .event.below .connector { top: -26px; height: 30px; }
+    .node {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 4px rgba(255,255,255,.72);
+      z-index: 3;
+    }
+    .event.above .node { top: 132px; }
+    .event.below .node { top: 0; }
+    .event-btn {
+      all: unset;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(120, 103, 86, 0.12);
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+      min-height: 104px;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .event-btn:hover .card,
+    .event-btn:focus-visible .card,
+    .event.active .card {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(53, 36, 24, .10);
+      border-color: #c6b39d;
+      background: #ffffff;
+    }
+    .year {
+      font-size: .95rem;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+    .title {
+      font-size: .95rem;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+    .detail {
+      border-top: 1px solid var(--line);
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 22px;
+      align-items: start;
+      background: rgba(255,255,255,.28);
+    }
+    .type-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 7px 11px;
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 14px;
+    }
+    .detail-year {
+      font-size: clamp(1.9rem, 3vw, 2.8rem);
+      line-height: 1;
+      font-weight: 800;
+      margin: 0 0 10px;
+    }
+    .detail-title {
+      margin: 0 0 12px;
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      line-height: 1.15;
+    }
+    .detail p { margin: 0 0 14px; }
+    .detail .muted { color: var(--muted); }
+    .note {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    @media (max-width: 900px) {
+      .detail { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <span class="eyebrow">Interactive timeline</span>
+    <h1>Olympics and politics</h1>
+    <p class="intro">This timeline shows how the Olympic Games have repeatedly become a stage for propaganda, diplomatic conflict, athlete protest, and rights-based contestation. Click any highlighted event on the line to open the full note below; the smaller date markers provide chronological reference points only.</p>
+
+    <div class="legend">
+      <span class="legend-item"><span class="swatch" style="background:var(--propaganda)"></span>Propaganda</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--boycott)"></span>Boycott</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--contestation)"></span>Protest / rights contestation</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--diplomacy)"></span>War / diplomacy</span>
+    </div>
+
+    <section class="shell">
+      <div class="shell-head"></div>
+      <div class="horizontal-wrap">
+        <div class="timeline" id="timeline">
+          <div class="axis"></div>
+        </div>
+      </div>
+      <div class="detail" id="detail">
+        <div>
+          <div id="detailType" class="type-pill">Propaganda</div>
+          <div id="detailYear" class="detail-year">1936</div>
+        </div>
+        <div>
+          <h2 id="detailTitle" class="detail-title">Berlin: the Olympics as a Nazi ideological showcase</h2>
+          <p id="detailLegend">Berlin hosted the 1936 Summer Olympics under Adolf Hitler’s regime, and the event was carefully staged to impress foreign visitors with images of order, grandeur, and national strength. Nazi authorities treated the Games as an international display window for the regime and its racial ideology, even if that message was partly challenged by the victories of athletes such as Jesse Owens.</p>
+          <p id="detailAnalysis" class="muted">This case shows that a sporting mega-event can function as a tool of state propaganda. It also reveals a lasting tension at the heart of the Olympics: universalist rhetoric does not prevent political instrumentalization.</p>
+          <div class="note"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const olympicYears = [
+      '1936','1948','1952','1956','1960','1964','1968','1972','1976','1980','1984','1988','1992','1996','2000','2004','2008','2012','2014','2016','2020','2022','2024'
+    ];
+
+    const events = [
+      {
+        year: '1936',
+        title: 'Berlin: the Olympics as a Nazi ideological showcase',
+        type: 'Propaganda',
+        color: 'var(--propaganda)',
+        legend: 'Berlin hosted the 1936 Summer Olympics under Adolf Hitler’s regime, and the event was carefully staged to impress foreign visitors with images of order, grandeur, and national strength. Nazi authorities treated the Games as an international display window for the regime and its racial ideology, even if that message was partly challenged by the victories of athletes such as Jesse Owens.',
+        analysis: 'This case shows that a sporting mega-event can function as a tool of state propaganda. It also reveals a lasting tension at the heart of the Olympics: universalist rhetoric does not prevent political instrumentalization.'
+      },
+      {
+        year: '1948',
+        title: 'London: exclusion in the postwar order',
+        type: 'War / diplomacy',
+        color: 'var(--diplomacy)',
+        legend: 'The 1948 London Games were the first Olympics held after the Second World War, and Germany and Japan were not invited to participate. Their exclusion reflected the political boundaries of the postwar order and the fact that Olympic participation could depend on international legitimacy as much as sporting readiness.',
+        analysis: 'Olympic participation appears here as a form of diplomatic recognition. The Games did not stand outside politics; they mirrored the boundaries of legitimacy after the war.'
+      },
+      {
+        year: '1968',
+        title: 'Mexico City: Smith and Carlos raise their fists',
+        type: 'Protest / rights contestation',
+        color: 'var(--contestation)',
+        legend: 'At the medal ceremony for the 200 meters in Mexico City, Tommie Smith and John Carlos raised black-gloved fists while the U.S. anthem played. Their gesture denounced racism and inequality in the United States and quickly became one of the most famous images of political protest in modern sport.',
+        analysis: 'The medal ceremony turned into a global scene of protest. The episode demonstrates how athletes can use Olympic visibility to challenge political and social injustice.'
+      },
+      {
+        year: '1972',
+        title: 'Munich: terrorism enters the Olympic stage',
+        type: 'War / diplomacy',
+        color: 'var(--diplomacy)',
+        legend: 'During the Munich Olympics, members of the Palestinian group Black September took Israeli athletes hostage in the Olympic Village. The crisis ended with the deaths of eleven Israelis, a German police officer, and several attackers, permanently changing the security history of the Games.',
+        analysis: 'After Munich, the Olympics could no longer be imagined as insulated from world conflict. Security, terrorism, and geopolitical violence became central to Olympic planning.'
+      },
+      {
+        year: '1976',
+        title: 'Montreal: African boycott over apartheid',
+        type: 'Boycott',
+        color: 'var(--boycott)',
+        legend: 'At the Montreal Games, 22 African countries boycotted the Olympics after the IOC refused to ban New Zealand, whose rugby team had recently toured apartheid South Africa. The same edition was also affected by a diplomatic dispute over the name and status of Chinese Taipei, which withdrew on the eve of the opening ceremony.',
+        analysis: 'The boycott turned the Games into a diplomatic lever against racial segregation. Olympic participation became a means of pressure, not merely celebration.'
+      },
+      {
+        year: '1980',
+        title: 'Moscow: U.S.-led boycott',
+        type: 'Boycott',
+        color: 'var(--boycott)',
+        legend: 'After the Soviet invasion of Afghanistan in late 1979, the United States led a boycott of the 1980 Moscow Olympics and persuaded many allies to stay away as well. The result was one of the clearest examples of the Games being used as an instrument of Cold War pressure.',
+        analysis: 'Athletes became hostages of Cold War confrontation. The Olympics served as a symbolic language of international punishment and rivalry.'
+      },
+      {
+        year: '1984',
+        title: 'Los Angeles: Soviet counter-boycott',
+        type: 'Boycott',
+        color: 'var(--boycott)',
+        legend: 'Four years later, the Soviet Union and most of its allies refused to attend the Los Angeles Olympics, officially citing security concerns and anti-Soviet sentiment. In practice, the move was widely interpreted as a political response to the Western boycott of Moscow in 1980.',
+        analysis: 'Taken together, the 1980 and 1984 boycotts reveal how deeply the Olympic arena could be absorbed into bloc politics during the Cold War.'
+      },
+      {
+        year: '2008',
+        title: 'Beijing: Tibet, rights, and global image',
+        type: 'Protest / rights contestation',
+        color: 'var(--contestation)',
+        legend: 'In the run-up to the Beijing Olympics, the global torch relay was repeatedly disrupted by protests linked to Tibet and broader criticism of China’s human-rights record. The Games therefore became both a prestige project for the Chinese state and a focal point for transnational activism.',
+        analysis: 'The Games functioned both as a prestige project and as a moment of global scrutiny. Olympic hosting amplified China’s image abroad, but it also intensified criticism.'
+      },
+      {
+        year: '2014',
+        title: 'Sochi: Pussy Riot, LGBT issues, and sportswashing',
+        type: 'Protest / rights contestation',
+        color: 'var(--contestation)',
+        legend: 'The Sochi Winter Olympics unfolded amid international criticism of Russia’s law against so-called “gay propaganda” and wider concern over civil liberties. The Games were also marked by the Pussy Riot affair, which reinforced the perception that Olympic spectacle was being used to soften the image of an increasingly authoritarian state.',
+        analysis: 'Sochi is often read as a case of sportswashing: sporting prestige was used to improve a state’s image while rights and freedoms remained under heavy criticism.'
+      },
+      {
+        year: '2016',
+        title: 'Kaepernick: taking a knee',
+        type: 'Protest / rights contestation',
+        color: 'var(--contestation)',
+        legend: 'In 2016, NFL quarterback Colin Kaepernick began kneeling during the U.S. national anthem to protest police violence and systemic racism. Although the gesture took place outside the Olympic arena, it became an essential reference point in the wider history of athlete-led political protest.',
+        analysis: 'Although this protest took place outside the Olympics, it extends the legacy of Mexico 1968. It shows how the athlete’s body can remain a powerful medium of political dissent.'
+      },
+      {
+        year: '2022–2024',
+        title: 'Russia, Belarus, and neutral participation',
+        type: 'War / diplomacy',
+        color: 'var(--diplomacy)',
+        legend: 'After Russia’s full-scale invasion of Ukraine in 2022, Russian and Belarusian athletes were widely excluded from international sport before limited Olympic participation under a neutral banner was approved for Paris 2024. Only individual athletes meeting strict conditions could compete, without national flags, anthems, or team entries.',
+        analysis: 'This sequence reopened a central Olympic dilemma: should sport punish states through exclusion, or preserve competition for individuals even in wartime?'
+      }
+    ];
+
+    const timeline = document.getElementById('timeline');
+    const detailType = document.getElementById('detailType');
+    const detailYear = document.getElementById('detailYear');
+    const detailTitle = document.getElementById('detailTitle');
+    const detailLegend = document.getElementById('detailLegend');
+    const detailAnalysis = document.getElementById('detailAnalysis');
+
+    const yearToX = {};
+    const start = 90;
+    const step = 96;
+    olympicYears.forEach((year, index) => {
+      yearToX[year] = start + index * step;
+    });
+    yearToX['2022–2024'] = yearToX['2024'] - 18;
+
+    olympicYears.forEach((year) => {
+      const tick = document.createElement('div');
+      tick.className = 'tick';
+      tick.style.left = `${yearToX[year]}px`;
+      tick.innerHTML = `<div class="tick-line"></div><div class="tick-label">${year}</div>`;
+      timeline.appendChild(tick);
+    });
+
+    function updateDetail(index) {
+      const e = events[index];
+      detailType.textContent = e.type;
+      detailType.style.background = e.color;
+      detailYear.textContent = e.year;
+      detailTitle.textContent = e.title;
+      detailLegend.textContent = e.legend;
+      detailAnalysis.textContent = e.analysis;
+      document.querySelectorAll('.event').forEach((node, i) => node.classList.toggle('active', i === index));
+    }
+
+    events.forEach((e, index) => {
+      const event = document.createElement('div');
+      const side = index % 2 === 0 ? 'above' : 'below';
+      event.className = `event ${side}` + (index === 0 ? ' active' : '');
+      event.style.left = `${yearToX[e.year] || (start + index * step)}px`;
+      event.innerHTML = `
+        <div class="connector"></div>
+        <div class="node" style="background:${e.color}"></div>
+        <button class="event-btn" type="button" aria-label="Open ${e.year}: ${e.title}">
+          <div class="card">
+            <div class="year">${e.year}</div>
+            <div class="title">${e.title}</div>
+          </div>
+        </button>
+      `;
+      event.querySelector('button').addEventListener('click', () => updateDetail(index));
+      timeline.appendChild(event);
+    });
+
+    updateDetail(0);
+  </script>
+</body>
+</html>
